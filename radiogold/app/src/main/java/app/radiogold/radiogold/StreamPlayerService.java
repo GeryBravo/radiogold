@@ -1,10 +1,11 @@
 package app.radiogold.radiogold;
 
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.provider.SyncStateContract;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import app.radiogold.radiogold.helpers.Actions;
@@ -19,13 +20,35 @@ public class StreamPlayerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        switch (intent.getAction())
+        //GET FROM ACTIVITY
+        if(intent.getAction().equals(Actions.START_SERVICE))
         {
-            case Actions.START_SERVICE:
+            Log.d(LOG_TAG, "Actions.START_SERVICE received");
 
-                break;
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            notificationIntent.setAction(Actions.NOTI);
+            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this,0,notificationIntent,0);
+
+            Notification notification = new NotificationCompat.Builder(this)
+                    .setContentTitle("Radio Gold")
+                    .setTicker("Radio Gold")
+                    .setContentText("My Stream")
+                    .setContentIntent(pendingIntent)
+                    .setOngoing(true).build();
+
+            startForeground(Actions.NOTIFICATION_ID,notification);
         }
-        return 1;
+        else if(intent.getAction().equals(Actions.STOP_SERVICE))
+        {
+            Log.d(LOG_TAG,"Actions.STOP_SERVICE received");
+        }
+        //GET FROM NOTIFICATION
+        else if(intent.getAction().equals(Actions.PLAY_STREAM))
+        {
+            Log.d(LOG_TAG,"Actions.PLAY_STREAM received");
+        }
+        return START_STICKY;
     }
 
     @Override
