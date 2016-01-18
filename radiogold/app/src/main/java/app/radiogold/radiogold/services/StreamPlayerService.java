@@ -86,11 +86,11 @@ public class StreamPlayerService extends Service {
         PendingIntent pendingPreviousIntent = PendingIntent.getService(this, 0, playIntent, 0);
 
         Intent previousIntent = new Intent(this, StreamPlayerService.class);
-        playIntent.setAction(Actions.PREV_STREAM);
+        previousIntent.setAction(Actions.PREV_STREAM);
         PendingIntent pendingPlayIntent = PendingIntent.getService(this, 0, previousIntent, 0);
 
         Intent nextIntent = new Intent(this, StreamPlayerService.class);
-        playIntent.setAction(Actions.NEXT_STREAM);
+        nextIntent.setAction(Actions.NEXT_STREAM);
         PendingIntent pendingNextIntent = PendingIntent.getService(this, 0, nextIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this)
@@ -101,6 +101,7 @@ public class StreamPlayerService extends Service {
                 .addAction(android.R.drawable.ic_media_play, "Play", pendingPlayIntent)
                 .addAction(android.R.drawable.ic_media_next, "Next", pendingNextIntent)
                 .setPriority(Notification.PRIORITY_MAX)
+                .setContentIntent(pendingIntent)
                 .build();
 
         startForeground(Actions.NOTIFICATION_ID,notification);
