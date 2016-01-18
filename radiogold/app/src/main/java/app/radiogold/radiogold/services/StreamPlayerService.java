@@ -6,10 +6,13 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.renderscript.RenderScript;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+
+import java.io.IOException;
 
 import app.radiogold.radiogold.MainActivity;
 import app.radiogold.radiogold.R;
@@ -21,6 +24,9 @@ import app.radiogold.radiogold.helpers.Actions;
 public class StreamPlayerService extends Service {
 
     private static final String LOG_TAG = "StreamPlayerService";
+    private static final String URL = "http://37.221.209.146:6200/live.mp3";
+
+    private MediaPlayer mediaPlayer;
 
     @Override
     public void onCreate() {
@@ -36,10 +42,12 @@ public class StreamPlayerService extends Service {
             Log.d(LOG_TAG, "Actions.START_SERVICE received");
             createNotification();
             initializeMediaPlayer();
+            startPlaying();
         }
         else if(intent.getAction().equals(Actions.STOP_SERVICE))
         {
             Log.d(LOG_TAG,"Actions.STOP_SERVICE received");
+            stopPlaying();
             stopForeground(true);
             stopSelf();
         }
@@ -59,8 +67,36 @@ public class StreamPlayerService extends Service {
         return START_STICKY;
     }
 
+    private void startPlaying() {
+        Log.d(LOG_TAG,"startPlaying");
+        try {
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopPlaying()
+    {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            initializeMediaPlayer();
+        }
+    }
+
     private void initializeMediaPlayer() {
-        //TODO PLAYING STREAM
+        mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(URL);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
