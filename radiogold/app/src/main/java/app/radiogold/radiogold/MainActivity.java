@@ -6,9 +6,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import app.radiogold.radiogold.helpers.Actions;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("MainActivity","onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getUI();
@@ -32,17 +36,18 @@ public class MainActivity extends AppCompatActivity {
                         streaming = false;
                         buttonStartStream.setChecked(false);
                         return;
+                        //If we have internet connection, we start the service
                     } else {
                         Intent startIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                        startIntent.setAction("app.radiogold.streamplayerservice.action.startforeground");
+                        startIntent.setAction(Actions.START_SERVICE);
                         startService(startIntent);
                         streaming = true;
                     }
                 }
-                //If the button is already checked, so we are streaming
+                //If the button is already checked, so we are streaming. We stop the service.
                 else {
                     Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                    stopIntent.setAction("app.radiogold.streamplayerservice.action.stopforeground");
+                    stopIntent.setAction(Actions.STOP_SERVICE);
                     startService(stopIntent);
                     streaming = false;
                 }
