@@ -1,5 +1,6 @@
 package app.radiogold.radiogold;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -25,12 +26,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getUI();
 
-        buttonStartStream.setActivated(true);
+        buttonStartStream.setChecked(isMyServiceRunning(StreamPlayerService.class));
 
         buttonStartStream.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
+                if (isChecked) {
                     if (!isOnline()) {
                         Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show();
                         streaming = false;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
                         Intent startIntent = new Intent(MainActivity.this, StreamPlayerService.class);
                         startIntent.setAction(Actions.START_SERVICE);
                         startService(startIntent);
+                        Log.d("MainActivity", "startIntent started");
                         streaming = true;
                     }
                 }
@@ -65,5 +67,15 @@ public class MainActivity extends AppCompatActivity {
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
