@@ -12,6 +12,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import app.radiogold.radiogold.helpers.Actions;
+import app.radiogold.radiogold.services.StreamPlayerService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity","onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getUI();
+        initializeUI();
 
         buttonStartStream.setActivated(true);
 
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getUI() {
+    private void initializeUI() {
         buttonStartStream = (ToggleButton) findViewById(R.id.buttonStartStream);
     }
 

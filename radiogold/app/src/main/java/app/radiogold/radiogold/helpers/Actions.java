@@ -12,5 +12,5 @@ public class Actions {
     public static final String PREV_STREAM = "PREV_STREAM";
     public static final String NOTI = "NOTI";
 
-    public static final int NOTIFICATION_ID = 1;
+    public static final int NOTIFICATION_ID = 101;
 }
