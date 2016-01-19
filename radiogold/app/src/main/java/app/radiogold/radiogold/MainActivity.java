@@ -42,11 +42,16 @@ public class MainActivity extends AppCompatActivity {
                         return;
                         //If we have internet connection, we start the service
                     } else {
-                        Intent startIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                        startIntent.setAction(Actions.START_SERVICE);
-                        startService(startIntent);
+                        if(!isMyServiceRunning(StreamPlayerService.class)) {
+                            Intent startIntent = new Intent(MainActivity.this, StreamPlayerService.class);
+                            startIntent.setAction(Actions.START_SERVICE);
+                            startService(startIntent);
+                        } else {
+                            Intent playIntent = new Intent(MainActivity.this, StreamPlayerService.class);
+                            playIntent.setAction(Actions.PLAY_STREAM);
+                            startService(playIntent);
+                        }
                         buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_pause);
-                        Log.d("MainActivity", "startIntent started");
                     }
                 }
                 //If the button is already checked, so we are streaming. We stop the service.
@@ -63,9 +68,11 @@ public class MainActivity extends AppCompatActivity {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                stopIntent.setAction(Actions.STOP_SERVICE);
-                startService(stopIntent);
+                if (isMyServiceRunning(StreamPlayerService.class)) {
+                    Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
+                    stopIntent.setAction(Actions.STOP_SERVICE);
+                    startService(stopIntent);
+                }
                 buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
                 buttonStartStream.setChecked(false);
             }
