@@ -20,7 +20,6 @@ import app.radiogold.radiogold.services.StreamPlayerService;
 public class MainActivity extends AppCompatActivity {
 
     private ToggleButton buttonStartStream;
-    private Boolean streaming = false;
     private Button stopButton;
 
     @Override
@@ -38,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
                 if (isChecked) {
                     if (!isOnline()) {
                         Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show();
-                        streaming = false;
                         buttonStartStream.setChecked(false);
                         buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
                         return;
@@ -49,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
                         startService(startIntent);
                         buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_pause);
                         Log.d("MainActivity", "startIntent started");
-                        streaming = true;
                     }
                 }
                 //If the button is already checked, so we are streaming. We stop the service.
@@ -57,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
                     Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
                     stopIntent.setAction(Actions.PLAY_STREAM);
                     startService(stopIntent);
-                    streaming = false;
                     buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
                 }
             }
@@ -71,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
                 stopIntent.setAction(Actions.STOP_SERVICE);
                 startService(stopIntent);
                 buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
-                streaming = false;
                 buttonStartStream.setChecked(false);
             }
         });
