@@ -8,6 +8,8 @@ import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -19,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ToggleButton buttonStartStream;
     private Boolean streaming = false;
+    private Button stopButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +40,14 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show();
                         streaming = false;
                         buttonStartStream.setChecked(false);
+                        buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
                         return;
                         //If we have internet connection, we start the service
                     } else {
                         Intent startIntent = new Intent(MainActivity.this, StreamPlayerService.class);
                         startIntent.setAction(Actions.START_SERVICE);
                         startService(startIntent);
+                        buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_pause);
                         Log.d("MainActivity", "startIntent started");
                         streaming = true;
                     }
@@ -50,17 +55,31 @@ public class MainActivity extends AppCompatActivity {
                 //If the button is already checked, so we are streaming. We stop the service.
                 else {
                     Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                    stopIntent.setAction(Actions.STOP_SERVICE);
+                    stopIntent.setAction(Actions.PLAY_STREAM);
                     startService(stopIntent);
                     streaming = false;
+                    buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
                 }
             }
 
+        });
+
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
+                stopIntent.setAction(Actions.STOP_SERVICE);
+                startService(stopIntent);
+                buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
+                streaming = false;
+                buttonStartStream.setChecked(false);
+            }
         });
     }
 
     private void initializeUI() {
         buttonStartStream = (ToggleButton) findViewById(R.id.buttonStartStream);
+        stopButton = (Button) findViewById(R.id.buttonStop);
     }
 
     public boolean isOnline() {
