@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
@@ -21,14 +22,36 @@ import app.radiogold.radiogold.services.StreamPlayerService;
 public class MainActivity extends AppCompatActivity {
 
     private ToggleButton buttonStartStream;
-    private Boolean stopService = false;
+    private Boolean killListener = false;
     private Button stopButton;
+    private IntentFilter mIntentFilter;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mReceiver, mIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("MainActivity","onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(Actions.BROADCAST_PLAY);
+        mIntentFilter.addAction(Actions.BROADCAST_STOP);
 
         initializeUI();
 
@@ -38,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d("MainActivity", "setOnCheckedChangeListener called");
-                if(stopService) return;
+                if(killListener) return;
                 if (isChecked) {
                     if (!isOnline()) {
                         Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show();
@@ -80,9 +103,9 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 buttonStartStream.setBackgroundResource(R.drawable.play128);
-                stopService = true;
+                killListener = true;
                 buttonStartStream.setChecked(false);
-                stopService = false;
+                killListener = false;
             }
         });
     }
@@ -113,7 +136,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
+            Log.d("BroadcastReceiver", "onReceive");
+            if (intent.getAction().equals(Actions.BROADCAST_PLAY)) {
+                killListener = true;
+                buttonStartStream.setChecked(true);
+                buttonStartStream.setBackgroundResource(R.drawable.pause52);
+                killListener = false;
+            }
+            if (intent.getAction().equals(Actions.BROADCAST_STOP)) {
+                killListener = true;
+                buttonStartStream.setChecked(false);
+                buttonStartStream.setBackgroundResource(R.drawable.play128);
+                killListener = false;
+            }
         }
     };
 }

@@ -81,6 +81,9 @@ public class StreamPlayerService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction(Actions.BROADCAST_PLAY);
+        sendBroadcast(broadcastIntent);
     }
 
     private void stopPlaying()
@@ -90,6 +93,9 @@ public class StreamPlayerService extends Service {
             mediaPlayer.release();
             initializeMediaPlayer();
         }
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction(Actions.BROADCAST_STOP);
+        sendBroadcast(broadcastIntent);
     }
 
     private void initializeMediaPlayer() {
