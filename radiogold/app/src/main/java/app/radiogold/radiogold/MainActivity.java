@@ -1,6 +1,7 @@
 package app.radiogold.radiogold;
 
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -20,7 +21,7 @@ import app.radiogold.radiogold.services.StreamPlayerService;
 public class MainActivity extends AppCompatActivity {
 
     private ToggleButton buttonStartStream;
-    private Boolean streaming = false;
+    private Boolean stopService = false;
     private Button stopButton;
 
     @Override
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity","onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         initializeUI();
 
         buttonStartStream.setChecked(isMyServiceRunning(StreamPlayerService.class));
@@ -35,11 +37,13 @@ public class MainActivity extends AppCompatActivity {
         buttonStartStream.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d("MainActivity", "setOnCheckedChangeListener called");
+                if(stopService) return;
                 if (isChecked) {
                     if (!isOnline()) {
                         Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show();
                         buttonStartStream.setChecked(false);
-                        buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
+                        buttonStartStream.setBackgroundResource(R.drawable.play128);
                         return;
                         //If we have internet connection, we start the service
                     } else {
@@ -48,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
                             startIntent.setAction(Actions.START_SERVICE);
                             startService(startIntent);
                         } else {
-                            Intent playIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                            playIntent.setAction(Actions.PLAY_STREAM);
-                            startService(playIntent);
+                            Intent newIntent = new Intent(MainActivity.this, StreamPlayerService.class);
+                            newIntent.setAction(Actions.PLAY_STREAM);
+                            startService(newIntent);
                         }
-                        buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_pause);
+                        buttonStartStream.setBackgroundResource(R.drawable.pause52);
                     }
                 }
                 //If the button is already checked, so we are streaming. We stop the service.
@@ -60,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                     Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
                     stopIntent.setAction(Actions.PLAY_STREAM);
                     startService(stopIntent);
-                    buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
+                    buttonStartStream.setBackgroundResource(R.drawable.play128);
                 }
             }
 
@@ -73,10 +77,12 @@ public class MainActivity extends AppCompatActivity {
                     Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
                     stopIntent.setAction(Actions.STOP_SERVICE);
                     startService(stopIntent);
+
                 }
-                buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
-                streaming = false;
+                buttonStartStream.setBackgroundResource(R.drawable.play128);
+                stopService = true;
                 buttonStartStream.setChecked(false);
+                stopService = false;
             }
         });
     }
@@ -102,4 +108,12 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+        }
+    };
 }
