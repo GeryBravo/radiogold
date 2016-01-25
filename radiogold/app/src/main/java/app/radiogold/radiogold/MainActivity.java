@@ -1,87 +1,81 @@
 package app.radiogold.radiogold;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import app.radiogold.radiogold.helpers.Actions;
 import app.radiogold.radiogold.services.StreamPlayerService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
-    private ToggleButton buttonStartStream;
-    private Button stopButton;
+    private static final String LOG_TAG = "MainActivity";
+
+    private ImageButton startButton;
+    private ImageButton stopButton;
+    private ImageButton linkButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("MainActivity","onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         initializeUI();
 
-        buttonStartStream.setChecked(isMyServiceRunning(StreamPlayerService.class));
-
-        buttonStartStream.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        startButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    if (!isOnline()) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show();
-                        buttonStartStream.setChecked(false);
-                        buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
-                        return;
-                        //If we have internet connection, we start the service
+            public void onClick(View v) {
+                Log.d(LOG_TAG, "onClick event");
+                if (!isOnline()) {
+                    Toast.makeText(getApplicationContext(), "Nincs internetkapcsolat!", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (!isMyServiceRunning(StreamPlayerService.class)) {
+                        Intent startService = new Intent(MainActivity.this, StreamPlayerService.class);
+                        startService.setAction(Actions.START_SERVICE);
+                        startService(startService);
                     } else {
-                        if(!isMyServiceRunning(StreamPlayerService.class)) {
-                            Intent startIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                            startIntent.setAction(Actions.START_SERVICE);
-                            startService(startIntent);
-                        } else {
-                            Intent playIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                            playIntent.setAction(Actions.PLAY_STREAM);
-                            startService(playIntent);
-                        }
-                        buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_pause);
+                        Intent playStream = new Intent(MainActivity.this, StreamPlayerService.class);
+                        playStream.setAction(Actions.PLAY_STREAM);
+                        startService(playStream);
                     }
                 }
-                //If the button is already checked, so we are streaming. We stop the service.
-                else {
-                    Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                    stopIntent.setAction(Actions.PLAY_STREAM);
-                    startService(stopIntent);
-                    buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
-                }
             }
-
         });
 
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isMyServiceRunning(StreamPlayerService.class)) {
-                    Intent stopIntent = new Intent(MainActivity.this, StreamPlayerService.class);
-                    stopIntent.setAction(Actions.STOP_SERVICE);
-                    startService(stopIntent);
+                if(isMyServiceRunning(StreamPlayerService.class))
+                {
+                    Intent stopStream = new Intent(MainActivity.this, StreamPlayerService.class);
+                    stopStream.setAction(Actions.STOP_STREAM);
+                    startService(stopStream);
                 }
-                buttonStartStream.setBackgroundResource(android.R.drawable.ic_media_play);
-                buttonStartStream.setChecked(false);
+            }
+        });
+
+        linkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://goldmusic.hu"));
+                startActivity(browserIntent);
             }
         });
     }
 
     private void initializeUI() {
-        buttonStartStream = (ToggleButton) findViewById(R.id.buttonStartStream);
-        stopButton = (Button) findViewById(R.id.buttonStop);
+        startButton = (ImageButton) findViewById(R.id.buttonStart);
+        stopButton = (ImageButton) findViewById(R.id.buttonStop);
+        linkButton = (ImageButton) findViewById(R.id.buttonLink);
     }
 
     public boolean isOnline() {
@@ -99,5 +93,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return false;
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Intent stopService = new Intent(this,StreamPlayerService.class);
+        stopService.setAction(Actions.STOP_SERVICE);
+        startService(stopService);
     }
 }

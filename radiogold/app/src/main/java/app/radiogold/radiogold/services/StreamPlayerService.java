@@ -12,6 +12,7 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import java.io.IOException;
+import java.net.URI;
 
 import app.radiogold.radiogold.MainActivity;
 import app.radiogold.radiogold.R;
@@ -24,6 +25,7 @@ public class StreamPlayerService extends Service {
 
     private static final String LOG_TAG = "StreamPlayerService";
     private static final String URL = "http://37.221.209.146:6200/live.mp3";
+    private static final String CATEGORY = "android.intent.category.LAUNCHER";
 
     private MediaPlayer mediaPlayer;
     private Notification notification;
@@ -33,6 +35,8 @@ public class StreamPlayerService extends Service {
     public void onCreate() {
         super.onCreate();
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        initializeMediaPlayer();
+        //streamData = new ParsingHeaderData();
     }
 
     @Override
@@ -41,10 +45,9 @@ public class StreamPlayerService extends Service {
         if(intent.getAction().equals(Actions.START_SERVICE))
         {
             Log.d(LOG_TAG, "Actions.START_SERVICE received");
-            buildNotification(android.R.drawable.ic_media_pause, "Pause");
-            startForeground(Actions.NOTIFICATION_ID,notification);
-            initializeMediaPlayer();
             startPlaying();
+            buildNotification(android.R.drawable.ic_media_pause, "Pause", Actions.STOP_STREAM, "");
+            startForeground(Actions.NOTIFICATION_ID, notification);
         }
         else if(intent.getAction().equals(Actions.STOP_SERVICE))
         {
@@ -57,17 +60,21 @@ public class StreamPlayerService extends Service {
         else if(intent.getAction().equals(Actions.PLAY_STREAM))
         {
             Log.d(LOG_TAG,"Actions.PLAY_STREAM received");
+            if(!mediaPlayer.isPlaying())
+            {
+                startPlaying();
+                buildNotification(android.R.drawable.ic_media_pause,"Pause",Actions.STOP_STREAM,"");
+                notificationManager.notify(Actions.NOTIFICATION_ID, notification);
+            }
+        }
+        else if(intent.getAction().equals(Actions.STOP_STREAM))
+        {
+            Log.d(LOG_TAG, "Actions.STOP_STREAM received");
             if(mediaPlayer.isPlaying())
             {
-                buildNotification(android.R.drawable.ic_media_play,"Play");
+                buildNotification(android.R.drawable.ic_media_play,"Play", Actions.PLAY_STREAM,"");
                 notificationManager.notify(Actions.NOTIFICATION_ID,notification);
                 stopPlaying();
-            }
-            else
-            {
-                buildNotification(android.R.drawable.ic_media_pause,"Pause");
-                notificationManager.notify(Actions.NOTIFICATION_ID,notification);
-                startPlaying();
             }
         }
         return START_STICKY;
@@ -83,8 +90,7 @@ public class StreamPlayerService extends Service {
         }
     }
 
-    private void stopPlaying()
-    {
+    private void stopPlaying() {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
             mediaPlayer.release();
@@ -117,23 +123,24 @@ public class StreamPlayerService extends Service {
         return null;
     }
 
-    private void buildNotification(int icon, String text) {
+    private void buildNotification(int icon, String text, String action, String songData) {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.setAction(Actions.NOTI);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        notificationIntent.addCategory(CATEGORY);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent playIntent = new Intent(this, StreamPlayerService.class);
-        playIntent.setAction(Actions.PLAY_STREAM);
+        playIntent.setAction(action);
         PendingIntent pendingPlayIntent = PendingIntent.getService(this, 0, playIntent, 0);
 
         notification = new NotificationCompat.Builder(this)
                 .setContentTitle("Radio Gold")
-                .setSmallIcon(R.drawable.icon)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText("- stream neve -"))
+                .setSmallIcon(R.drawable.icon_rg)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(songData))
                 .addAction(icon, text, pendingPlayIntent)
                 .setPriority(Notification.PRIORITY_MAX)
                 .setContentIntent(pendingIntent)
+                .setOngoing(true)
                 .build();
     }
 }

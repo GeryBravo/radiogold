@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">radiogold</string>
+    <string name="app_name">Rádio Gold</string>
     <string name="button_start_off_text">RadioGold stream indítása</string>
     <string name="button_start_on_text">RadioGold stream leállítása</string>
     <string name="error_no_internet">Nincs internetkapcsolat!</string>
