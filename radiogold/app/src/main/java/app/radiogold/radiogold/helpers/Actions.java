@@ -9,6 +9,9 @@ public class Actions {
     public static final String PLAY_STREAM = "PLAY_STREAM";
     public static final String STOP_STREAM = "STOP_STREAM";
     public static final String NOTI = "NOTI";
+    public static final String BROADCAST_PLAY = "BROADCAST_PLAY";
+    public static final String BROADCAST_STOP = "BROADCAST_STOP";
 
     public static final int NOTIFICATION_ID = 101;
+
 }
