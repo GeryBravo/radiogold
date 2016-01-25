@@ -46,7 +46,6 @@
         android:id="@+id/buttonLink"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent"
-        android:layout_below="@+id/innerLayout"
         android:src="@drawable/link"
         android:scaleType="fitCenter"
         android:background="@null"
