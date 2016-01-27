@@ -29,6 +29,7 @@
             android:adjustViewBounds="true"
             android:layout_weight="0.5"
             android:background="@null"
+            android:padding="15dp"
              />
 
         <ImageButton
@@ -40,6 +41,7 @@
             android:adjustViewBounds="true"
             android:layout_weight="0.5"
             android:background="@null"
+            android:padding="15dp"
             />
     </LinearLayout>
     <ImageButton
