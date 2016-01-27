@@ -35,6 +35,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
     private Notification notification;
     private NotificationManager notificationManager;
     private BroadcastReceiver wifiState;
+    private boolean isPrepared = false;
 
     @Override
     public void onCreate() {
@@ -48,21 +49,18 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                 NetworkInfo netInfo = conMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
                     Log.d("WifiReceiver", "Have Wifi Connection");
-                    //initializeMediaPlayer();
-                    try {
-                        mediaPlayer.prepare();
+                    if(isPrepared) {
                         mediaPlayer.start();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (IllegalStateException e) {
-                        e.printStackTrace();
-                    }
+                    } else
+                        initializeMediaPlayer();
+                        isPrepared = true;
+                        mediaPlayer.start();
                 }
                 else {
                     Log.d("WifiReceiver", "Don't have Wifi Connection");
-                    if(mediaPlayer.isPlaying()) {
+                    if(!isPrepared) {return;} else {
                         mediaPlayer.stop();
-                        //mediaPlayer.reset();
+                        isPrepared = false;
                     }
                 }
             }
@@ -115,7 +113,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
     }
 
     private void stopPlaying() {
-        Log.d(LOG_TAG,"stopPlaying");
+        Log.d(LOG_TAG, "stopPlaying");
         if(mediaPlayer.isPlaying())
         {
             mediaPlayer.stop();
@@ -148,6 +146,9 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
             mediaPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        finally {
+            isPrepared = true;
         }
         mediaPlayer.setOnErrorListener(this);
     }
@@ -188,7 +189,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Log.d(LOG_TAG, "onError");
+        Log.d(LOG_TAG, String.valueOf(extra));
         return false;
     }
 }
