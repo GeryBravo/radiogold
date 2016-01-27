@@ -4,9 +4,13 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -25,14 +29,45 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
     private static final String LOG_TAG = "StreamPlayerService";
     private static final String URL = "http://37.221.209.146:6200/live.mp3";
     private static final String CATEGORY = "android.intent.category.LAUNCHER";
+    private static final String WIFI_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
 
-    private MediaPlayer mediaPlayer;
+    MediaPlayer mediaPlayer = null;
     private Notification notification;
     private NotificationManager notificationManager;
+    private BroadcastReceiver wifiState;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(WIFI_ACTION);
+        wifiState = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ConnectivityManager conMan = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = conMan.getActiveNetworkInfo();
+                if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                    Log.d("WifiReceiver", "Have Wifi Connection");
+                    //initializeMediaPlayer();
+                    try {
+                        mediaPlayer.prepare();
+                        mediaPlayer.start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (IllegalStateException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    Log.d("WifiReceiver", "Don't have Wifi Connection");
+                    if(mediaPlayer.isPlaying()) {
+                        mediaPlayer.stop();
+                        //mediaPlayer.reset();
+                    }
+                }
+            }
+        };
+        this.registerReceiver(wifiState,filter);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         initializeMediaPlayer();
         //streamData = new ParsingHeaderData();
@@ -51,6 +86,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
         else if(intent.getAction().equals(Actions.STOP_SERVICE))
         {
             Log.d(LOG_TAG,"Actions.STOP_SERVICE received");
+            stopPlaying();
             stopForeground(true);
             stopSelf();
         }
@@ -76,6 +112,15 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
             }
         }
         return START_STICKY;
+    }
+
+    private void stopPlaying() {
+        Log.d(LOG_TAG,"stopPlaying");
+        if(mediaPlayer.isPlaying())
+        {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
     }
 
     private void startPlaying() {
@@ -111,6 +156,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
     public void onDestroy() {
         super.onDestroy();
         Log.i(LOG_TAG, "In onDestroy");
+        this.unregisterReceiver(wifiState);
     }
 
     @Override
