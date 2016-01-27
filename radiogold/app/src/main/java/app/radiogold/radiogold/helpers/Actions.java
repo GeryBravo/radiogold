@@ -11,6 +11,8 @@ public class Actions {
     public static final String NOTI = "NOTI";
     public static final String BROADCAST_PLAY = "BROADCAST_PLAY";
     public static final String BROADCAST_STOP = "BROADCAST_STOP";
+    public static final String BROADCAST_NO_NET = "BROADCAST_NO_NET";
+    public static final String BROADCAST_NET_AGAIN = "BROADCAST_NET_GAIN";
 
     public static final int NOTIFICATION_ID = 101;
 

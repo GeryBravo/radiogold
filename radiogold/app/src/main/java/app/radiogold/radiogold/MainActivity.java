@@ -2,8 +2,10 @@ package app.radiogold.radiogold;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -23,6 +25,25 @@ public class MainActivity extends Activity {
     private ImageButton startButton;
     private ImageButton stopButton;
     private ImageButton linkButton;
+    private IntentFilter mIntentFilter;
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Actions.BROADCAST_NO_NET)) {
+                Toast.makeText(getApplicationContext(), "Megszakadt az internetkapcsolat!", Toast.LENGTH_SHORT);
+            }
+            if (intent.getAction().equals(Actions.BROADCAST_NET_AGAIN)) {
+                Toast.makeText(getApplicationContext(), "Helyreállt az internetkapcsolat!", Toast.LENGTH_SHORT);
+            }
+        }
+    };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mReceiver, mIntentFilter);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +51,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         initializeUI();
+
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(Actions.BROADCAST_NO_NET);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,8 +78,7 @@ public class MainActivity extends Activity {
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isMyServiceRunning(StreamPlayerService.class))
-                {
+                if (isMyServiceRunning(StreamPlayerService.class)) {
                     Intent stopStream = new Intent(MainActivity.this, StreamPlayerService.class);
                     stopStream.setAction(Actions.PAUSE_STREAM);
                     startService(stopStream);
@@ -99,6 +122,7 @@ public class MainActivity extends Activity {
     public void onDestroy()
     {
         super.onDestroy();
+        unregisterReceiver(mReceiver);
         Intent stopService = new Intent(this,StreamPlayerService.class);
         stopService.setAction(Actions.STOP_SERVICE);
         startService(stopService);
