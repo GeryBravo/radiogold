@@ -51,16 +51,21 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                     Log.d("WifiReceiver", "Have Wifi Connection");
                     if(isPrepared) {
                         mediaPlayer.start();
-                    } else
+                    } else {
                         initializeMediaPlayer();
                         isPrepared = true;
                         mediaPlayer.start();
+                        buildNotification(R.drawable.icon_rg,android.R.drawable.ic_media_pause, "Pause", Actions.PAUSE_STREAM, "");
+                        notificationManager.notify(Actions.NOTIFICATION_ID, notification);
+                    }
                 }
                 else {
                     Log.d("WifiReceiver", "Don't have Wifi Connection");
                     if(!isPrepared) {return;} else {
                         mediaPlayer.stop();
                         isPrepared = false;
+                        buildNotification(R.drawable.warning,android.R.drawable.ic_media_play, "Play", Actions.PLAY_STREAM, "Internet kapcsolat megszakadt!");
+                        notificationManager.notify(Actions.NOTIFICATION_ID,notification);
                     }
                 }
             }
@@ -78,7 +83,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
         {
             Log.d(LOG_TAG, "Actions.START_SERVICE received");
             startPlaying();
-            buildNotification(android.R.drawable.ic_media_pause, "Pause", Actions.PAUSE_STREAM, "");
+            buildNotification(R.drawable.icon_rg,android.R.drawable.ic_media_pause, "Pause", Actions.PAUSE_STREAM, "");
             startForeground(Actions.NOTIFICATION_ID, notification);
         }
         else if(intent.getAction().equals(Actions.STOP_SERVICE))
@@ -95,7 +100,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
             if(!mediaPlayer.isPlaying())
             {
                 startPlaying();
-                buildNotification(android.R.drawable.ic_media_pause,"Pause",Actions.PAUSE_STREAM,"");
+                buildNotification(R.drawable.icon_rg,android.R.drawable.ic_media_pause,"Pause",Actions.PAUSE_STREAM,"");
                 notificationManager.notify(Actions.NOTIFICATION_ID, notification);
             }
         }
@@ -104,7 +109,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
             Log.d(LOG_TAG, "Actions.PAUSE_STREAM received");
             if(mediaPlayer.isPlaying())
             {
-                buildNotification(android.R.drawable.ic_media_play,"Play", Actions.PLAY_STREAM,"");
+                buildNotification(R.drawable.icon_rg,android.R.drawable.ic_media_play,"Play", Actions.PLAY_STREAM,"");
                 notificationManager.notify(Actions.NOTIFICATION_ID,notification);
                 pausePlaying();
             }
@@ -166,7 +171,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
         return null;
     }
 
-    private void buildNotification(int icon, String text, String action, String songData) {
+    private void buildNotification(int smallIcon,int functionIcon, String text, String action, String songData) {
         Intent notificationIntent = new Intent(this, MainActivity.class);
         notificationIntent.setAction(Actions.NOTI);
         notificationIntent.addCategory(CATEGORY);
@@ -178,9 +183,9 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
 
         notification = new NotificationCompat.Builder(this)
                 .setContentTitle("Radio Gold")
-                .setSmallIcon(R.drawable.icon_rg)
+                .setSmallIcon(smallIcon)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(songData))
-                .addAction(icon, text, pendingPlayIntent)
+                .addAction(functionIcon, text, pendingPlayIntent)
                 .setPriority(Notification.PRIORITY_MAX)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
