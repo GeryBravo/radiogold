@@ -49,15 +49,22 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                 NetworkInfo netInfo = conMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
                     Log.d("WifiReceiver", "Have Wifi Connection");
+                    Intent broadcastIntent = new Intent();
+                    broadcastIntent.setAction(Actions.BROADCAST_NO_NET);
+                    sendBroadcast(broadcastIntent);
                     if(isPrepared) {
                         mediaPlayer.start();
-                    } else
+                    } else {
                         initializeMediaPlayer();
                         isPrepared = true;
                         mediaPlayer.start();
+                    }
                 }
                 else {
                     Log.d("WifiReceiver", "Don't have Wifi Connection");
+                    Intent broadcastIntent = new Intent();
+                    broadcastIntent.setAction(Actions.BROADCAST_NET_AGAIN);
+                    sendBroadcast(broadcastIntent);
                     if(!isPrepared) {return;} else {
                         mediaPlayer.stop();
                         isPrepared = false;
