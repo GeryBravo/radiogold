@@ -7,12 +7,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.URI;
 
 import app.radiogold.radiogold.MainActivity;
 import app.radiogold.radiogold.R;
@@ -95,9 +95,10 @@ public class StreamPlayerService extends Service {
 
     private void stopPlaying() {
         if (mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            initializeMediaPlayer();
+            mediaPlayer.pause();
+            //mediaPlayer.release();
+            //initializeMediaPlayer();
+
         }
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(Actions.BROADCAST_STOP);
