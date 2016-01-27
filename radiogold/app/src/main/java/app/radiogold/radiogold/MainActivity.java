@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
                 if(isMyServiceRunning(StreamPlayerService.class))
                 {
                     Intent stopStream = new Intent(MainActivity.this, StreamPlayerService.class);
-                    stopStream.setAction(Actions.STOP_STREAM);
+                    stopStream.setAction(Actions.PAUSE_STREAM);
                     startService(stopStream);
                 }
             }

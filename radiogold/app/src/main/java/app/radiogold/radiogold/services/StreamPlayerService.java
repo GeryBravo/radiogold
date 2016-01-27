@@ -7,7 +7,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -21,7 +20,7 @@ import app.radiogold.radiogold.helpers.Actions;
 /**
  * Created by gerybravo on 2016.01.18..
  */
-public class StreamPlayerService extends Service {
+public class StreamPlayerService extends Service implements MediaPlayer.OnErrorListener {
 
     private static final String LOG_TAG = "StreamPlayerService";
     private static final String URL = "http://37.221.209.146:6200/live.mp3";
@@ -46,13 +45,12 @@ public class StreamPlayerService extends Service {
         {
             Log.d(LOG_TAG, "Actions.START_SERVICE received");
             startPlaying();
-            buildNotification(android.R.drawable.ic_media_pause, "Pause", Actions.STOP_STREAM, "");
+            buildNotification(android.R.drawable.ic_media_pause, "Pause", Actions.PAUSE_STREAM, "");
             startForeground(Actions.NOTIFICATION_ID, notification);
         }
         else if(intent.getAction().equals(Actions.STOP_SERVICE))
         {
             Log.d(LOG_TAG,"Actions.STOP_SERVICE received");
-            stopPlaying();
             stopForeground(true);
             stopSelf();
         }
@@ -63,18 +61,18 @@ public class StreamPlayerService extends Service {
             if(!mediaPlayer.isPlaying())
             {
                 startPlaying();
-                buildNotification(android.R.drawable.ic_media_pause,"Pause",Actions.STOP_STREAM,"");
+                buildNotification(android.R.drawable.ic_media_pause,"Pause",Actions.PAUSE_STREAM,"");
                 notificationManager.notify(Actions.NOTIFICATION_ID, notification);
             }
         }
-        else if(intent.getAction().equals(Actions.STOP_STREAM))
+        else if(intent.getAction().equals(Actions.PAUSE_STREAM))
         {
-            Log.d(LOG_TAG, "Actions.STOP_STREAM received");
+            Log.d(LOG_TAG, "Actions.PAUSE_STREAM received");
             if(mediaPlayer.isPlaying())
             {
                 buildNotification(android.R.drawable.ic_media_play,"Play", Actions.PLAY_STREAM,"");
                 notificationManager.notify(Actions.NOTIFICATION_ID,notification);
-                stopPlaying();
+                pausePlaying();
             }
         }
         return START_STICKY;
@@ -82,27 +80,12 @@ public class StreamPlayerService extends Service {
 
     private void startPlaying() {
         Log.d(LOG_TAG,"startPlaying");
-        try {
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(Actions.BROADCAST_PLAY);
-        sendBroadcast(broadcastIntent);
+        mediaPlayer.start();
     }
 
-    private void stopPlaying() {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            //mediaPlayer.release();
-            //initializeMediaPlayer();
-
-        }
-        Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(Actions.BROADCAST_STOP);
-        sendBroadcast(broadcastIntent);
+    private void pausePlaying() {
+        Log.d(LOG_TAG, "pausePlaying");
+        mediaPlayer.pause();
     }
 
     private void initializeMediaPlayer() {
@@ -116,6 +99,12 @@ public class StreamPlayerService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        try {
+            mediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mediaPlayer.setOnErrorListener(this);
     }
 
     @Override
@@ -149,5 +138,11 @@ public class StreamPlayerService extends Service {
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .build();
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        Log.d(LOG_TAG, "onError");
+        return false;
     }
 }
