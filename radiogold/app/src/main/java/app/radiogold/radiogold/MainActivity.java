@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
     private ImageButton linkButton;
     private IntentFilter mIntentFilter;
 
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    public BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Actions.BROADCAST_NO_NET)) {
@@ -54,6 +54,7 @@ public class MainActivity extends Activity {
 
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(Actions.BROADCAST_NO_NET);
+        mIntentFilter.addAction(Actions.BROADCAST_NET_AGAIN);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override

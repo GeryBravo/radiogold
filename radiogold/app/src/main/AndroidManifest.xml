@@ -27,5 +27,4 @@
         </activity>
         <service android:name=".services.StreamPlayerService" />
     </application>
-
 </manifest>

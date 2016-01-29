@@ -36,6 +36,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
     private NotificationManager notificationManager;
     private BroadcastReceiver wifiState;
     private boolean isPrepared = false;
+    private boolean isServiceRunning = false;
 
     @Override
     public void onCreate() {
@@ -45,6 +46,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
         wifiState = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                if(isServiceRunning) {
                 ConnectivityManager conMan = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = conMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
@@ -54,6 +56,8 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                     sendBroadcast(broadcastIntent);
                     if(isPrepared) {
                         mediaPlayer.start();
+                        buildNotification(R.drawable.icon_rg,android.R.drawable.ic_media_pause, "Pause", Actions.PAUSE_STREAM, "");
+                        notificationManager.notify(Actions.NOTIFICATION_ID, notification);
                     } else {
                         initializeMediaPlayer();
                         isPrepared = true;
@@ -75,6 +79,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                     }
                 }
             }
+            }
         };
         this.registerReceiver(wifiState,filter);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -88,6 +93,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
         if(intent.getAction().equals(Actions.START_SERVICE))
         {
             Log.d(LOG_TAG, "Actions.START_SERVICE received");
+            isServiceRunning = true;
             startPlaying();
             buildNotification(R.drawable.icon_rg,android.R.drawable.ic_media_pause, "Pause", Actions.PAUSE_STREAM, "");
             startForeground(Actions.NOTIFICATION_ID, notification);
@@ -95,6 +101,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
         else if(intent.getAction().equals(Actions.STOP_SERVICE))
         {
             Log.d(LOG_TAG,"Actions.STOP_SERVICE received");
+            isServiceRunning = false;
             stopPlaying();
             stopForeground(true);
             stopSelf();
