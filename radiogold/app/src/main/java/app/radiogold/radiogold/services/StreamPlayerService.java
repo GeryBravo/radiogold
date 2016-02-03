@@ -74,7 +74,7 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                     if(!isPrepared) {return;} else {
                         mediaPlayer.stop();
                         isPrepared = false;
-                        buildNotification(R.drawable.warning,android.R.drawable.ic_media_play, "Play", Actions.PLAY_STREAM, "Internet kapcsolat megszakadt!");
+                        buildNotificationWithoutButton(R.drawable.warning, "Play", Actions.PLAY_STREAM, "Internet kapcsolat megszakadt!");
                         notificationManager.notify(Actions.NOTIFICATION_ID,notification);
                     }
                 }
@@ -199,6 +199,25 @@ public class StreamPlayerService extends Service implements MediaPlayer.OnErrorL
                 .setSmallIcon(smallIcon)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(songData))
                 .addAction(functionIcon, text, pendingPlayIntent)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setContentIntent(pendingIntent)
+                .setOngoing(true)
+                .build();
+    }
+
+    private void buildNotificationWithoutButton(int smallIcon, String text, String action, String songData) {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.setAction(Actions.NOTI);
+        notificationIntent.addCategory(CATEGORY);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent playIntent = new Intent(this, StreamPlayerService.class);
+        playIntent.setAction(action);
+
+        notification = new NotificationCompat.Builder(this)
+                .setContentTitle("Radio Gold")
+                .setSmallIcon(smallIcon)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(songData))
                 .setPriority(Notification.PRIORITY_MAX)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
